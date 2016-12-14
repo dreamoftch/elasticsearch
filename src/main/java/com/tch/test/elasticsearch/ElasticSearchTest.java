@@ -2,7 +2,6 @@ package com.tch.test.elasticsearch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,7 +21,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -33,24 +31,35 @@ import org.elasticsearch.search.sort.SortOrder;
 
 import com.alibaba.fastjson.JSON;
 import com.tch.test.common.utils.CollectionUtil;
+import com.tch.test.elasticsearch.utils.ElasticSearchUtil;
 import com.tch.test.elasticsearch.vo.ESOrganization;
 import com.tch.test.elasticsearch.vo.OrgSearchReq;
 
 public class ElasticSearchTest {
 	final static Logger logger = Logger.getLogger(ElasticSearchTest.class);
+	
+	private static String[] orgNames = {
+			"小米科技有限责任公司",
+			"乐视网信息技术（北京）股份有限公司",
+			"网易（杭州）网络有限公司",
+			"阿里巴巴（中国）有限公司",
+			"上海希格斯网络科技有限公司",
+			"running man",
+			"chicken run",
+			"tom runs fast",
+			"Text-analyzer"
+	};
 
 	public static void main(String[] args) throws Exception {
 
-		TransportClient client = null;
 		try {
-			client = TransportClient.builder().build()
-					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+			TransportClient client = ElasticSearchUtil.client();
 
 //			prepareIndex(client);
 			
 //			updateOrg(client);
 			
-//			test(client);
+			test(client);
 //			TimeUnit.SECONDS.sleep(1);
 //			searchAllOrg(client);
 			
@@ -72,9 +81,7 @@ public class ElasticSearchTest {
 //			fuzzySearch(client);
 			
 		} finally {
-			if (client != null) {
-				client.close();
-			}
+			ElasticSearchUtil.release();
 		}
 	}
 	
@@ -262,46 +269,15 @@ public class ElasticSearchTest {
 	public static void test(TransportClient client) throws Exception {
 		prepareIndex(client);
         
-		String[] orgNames = {
-				"小米科技有限责任公司",
-				"乐视网信息技术（北京）股份有限公司",
-				"网易（杭州）网络有限公司",
-				"阿里巴巴（中国）有限公司",
-				"上海希格斯网络科技有限公司"
-		};
 		for (int i = 0; i< orgNames.length; i++) {
 			client.prepareIndex("automind", "organization", String.valueOf(i+1))
-				.setSource(
-//						jsonBuilder().startObject()
-//						.field("id", i+1)
-//						.field("ownerId", 1)
-//						.field("name", orgNames[i])
-//						.field("type", i*1)
-//						.array("locationCodes", 1000*i, 2000*i, 3000*i)
-//						.array("industryCodes", 1*i, 2*i)
-//						.field("natureCode",5*i)
-//						.array("industrialModeCodes", 1+i, 20+i, 30+i)
-//						.field("empScale", 6*i)
-//						.field("financingStatus", 3*i)
-//						.array("highlightCodes", 7+i,9+i)
-//						.field("registedAt", new Date())
-//						.field("updatedAt", new Date())
-//						.endObject()
-						orgSource(i)
-						)
+				.setSource(orgSource(i))
 				.get();
 //			System.out.println("indexResponse: " + indexResponse);
 		}
 	}
 	
 	public static String orgSource(int i) {
-		String[] orgNames = {
-				"小米科技有限责任公司",
-				"乐视网信息技术（北京）股份有限公司",
-				"网易（杭州）网络有限公司",
-				"阿里巴巴（中国）有限公司",
-				"上海希格斯网络科技有限公司"
-		};
 		ESOrganization organization = new ESOrganization();
 		organization.setId(Long.valueOf(i+1));
 		organization.setOwnerId(1L);
