@@ -7,7 +7,6 @@ public class User {
 	
 	public User() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 	public User(String name, String address) {
 		super();
@@ -26,6 +25,5 @@ public class User {
 	public void setAddress(String address) {
 		this.address = address;
 	}
-	
 	
 }
